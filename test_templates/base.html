@@ -7,6 +7,9 @@
     <script type="text/javascript" src="../../RES/testsuite.js"></script>
     {% endif %}
     <script>
+    // Initialize test variables
+    {{ test_init }}
+
     {% if target == "hbbtv" %}
     var testapi;
     window.onload = function() {
@@ -26,8 +29,6 @@
         {% else %}
         console.log("Starting test {{ test_id }}");
         {% endif %}
-        
-        {{ test_init }}
         
         runTest();
     }
