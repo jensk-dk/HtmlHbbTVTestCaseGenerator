@@ -22,24 +22,26 @@ The generator follows these specifications:
 ## Directory Structure
 
 ```
-test_templates/           # Test case templates
-└── TEST_001/
-    ├── test.html        # Test template
-    └── resources/       # Test-specific resources
+test_templates/                    # Templates directory
+├── base.html                     # Base template for all test cases
+└── TEST_001_step_sequence/       # Example test case
+    └── test.html                # Test implementation
 
-tests/                   # Generated test cases
+tests/                           # Generated test cases (not in git)
 ├── HbbTV/
 │   └── TEST_001/
 │       ├── index.html          # HbbTV test case
 │       ├── implementation.xml  # Test implementation
 │       ├── ait.xml            # Application info
 │       ├── playoutset.xml     # DVB configuration
-│       └── resources/         # Test resources
+│       └── resources/         # Test resources (if any)
 └── Html/
     └── TEST_001/
         ├── index.html         # W3C browser test
-        └── resources/         # Test resources
+        └── resources/         # Test resources (if any)
 ```
+
+The generator uses `base.html` as a template to create both HbbTV and W3C versions of each test case. Test cases are organized in their own directories under `test_templates/`, with each test case defined in a `test.html` file.
 
 ## Usage
 
