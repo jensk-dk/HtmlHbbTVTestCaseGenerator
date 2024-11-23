@@ -5,111 +5,22 @@ import re
 import shutil
 from typing import Dict, List, Union, Literal
 from bs4 import BeautifulSoup
-from xml_generator import HbbTVXMLGenerator
 
 class TestCaseGenerator:
     def __init__(self, templates_dir: str = "test_templates"):
+        """Initialize the test case generator
+        
+        Args:
+            templates_dir: Directory containing base.html and test case directories
+        """
+        if not os.path.exists(templates_dir):
+            raise ValueError(f"Templates directory {templates_dir} does not exist")
+            
+        if not os.path.exists(os.path.join(templates_dir, "base.html")):
+            raise ValueError(f"Base template {templates_dir}/base.html does not exist")
+            
         self.env = Environment(loader=FileSystemLoader(templates_dir))
         self.xml_generator = HbbTVXMLGenerator()
-        self.ensure_base_template(templates_dir)
-        
-    def ensure_base_template(self, templates_dir: str):
-        """Create base template if it doesn't exist"""
-        if not os.path.exists(templates_dir):
-            os.makedirs(templates_dir)
-        
-        base_template_path = os.path.join(templates_dir, "base.html")
-        if not os.path.exists(base_template_path):
-            self.create_base_template(base_template_path)
-    
-    def create_base_template(self, base_template_path: str):
-        """Create default template files"""
-        base_template = '''<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>{{ test_id }} - {{ test_name }}</title>
-    {% if target == "hbbtv" %}
-    <script type="text/javascript" src="../../RES/testsuite.js"></script>
-    {% endif %}
-    <script>
-    {% if target == "hbbtv" %}
-    var testapi;
-    window.onload = function() {
-        testapi = new HbbTVTestAPI();
-        testapi.init();
-        startTest();
-    };
-    {% else %}
-    window.onload = function() {
-        startTest();
-    };
-    {% endif %}
-
-    function startTest() {
-        {% if target == "hbbtv" %}
-        testapi.reportMessage("Starting test {{ test_id }}");
-        {% else %}
-        console.log("Starting test {{ test_id }}");
-        {% endif %}
-        
-        {{ test_init }}
-        
-        runTest();
-    }
-
-    function runTest() {
-        {{ test_body }}
-    }
-
-    function reportStep(stepId, result, message) {
-        {% if target == "hbbtv" %}
-        testapi.reportStepResult(stepId, result, message);
-        {% else %}
-        console.log(`Step ${stepId}: ${result} - ${message}`);
-        const div = document.createElement('div');
-        div.textContent = `Step ${stepId}: ${result} - ${message}`;
-        div.className = result.toLowerCase();
-        document.body.appendChild(div);
-        {% endif %}
-    }
-
-    function endTest(result, message) {
-        {% if target == "hbbtv" %}
-        testapi.endTest(result, message);
-        {% else %}
-        console.log(`Test ended: ${result} - ${message}`);
-        const div = document.createElement('div');
-        div.textContent = `Test ended: ${result} - ${message}`;
-        div.className = `test-end ${result.toLowerCase()}`;
-        document.body.appendChild(div);
-        {% endif %}
-    }
-    </script>
-    <style>
-    {% if target == "w3c" %}
-    .pass { color: green; }
-    .fail { color: red; }
-    .test-end { 
-        margin-top: 20px;
-        font-weight: bold;
-    }
-    {% endif %}
-    {{ additional_styles }}
-    </style>
-</head>
-<body>
-    <h1>{{ test_name }}</h1>
-    <p>Test ID: {{ test_id }}</p>
-    {% if target == "w3c" %}
-    <div id="test-output"></div>
-    {% endif %}
-    {{ test_html }}
-</body>
-</html>'''
-        
-        with open(os.path.join(templates_dir, "base.html"), "w") as f:
-            f.write(base_template)
 
     def extract_test_info(self, template_path: str) -> Dict:
         """
@@ -181,9 +92,9 @@ class TestCaseGenerator:
             test_name: Human readable name of the test
             test_init: JavaScript code for test initialization
             test_body: JavaScript code for the test steps
+            target: Target platform ("hbbtv" or "w3c")
             test_html: Additional HTML content for the test
             additional_styles: Additional CSS styles
-            target: Target platform ("hbbtv" or "w3c")
             
         Returns:
             The generated HTML test case as a string
@@ -247,7 +158,7 @@ class TestCaseGenerator:
             test_info['additional_styles']
         )
         
-        # Save HTML files
+        # Save to files
         hbbtv_path = os.path.join(hbbtv_dir, "index.html")
         w3c_path = os.path.join(html_dir, "index.html")
         
@@ -304,9 +215,9 @@ class TestCaseGenerator:
         
         # Find all directories in templates_dir
         for item in os.listdir(templates_dir):
-            template_dir = os.path.join(templates_dir, item)
-            if os.path.isdir(template_dir):
+            if item != "base.html" and os.path.isdir(os.path.join(templates_dir, item)):
                 try:
+                    template_dir = os.path.join(templates_dir, item)
                     results[item] = self.generate_from_template(template_dir, output_dir)
                 except Exception as e:
                     print(f"Error processing {item}: {str(e)}")
