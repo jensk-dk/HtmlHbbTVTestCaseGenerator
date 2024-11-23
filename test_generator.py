@@ -8,18 +8,21 @@ from bs4 import BeautifulSoup
 from xml_generator import HbbTVXMLGenerator
 
 class TestCaseGenerator:
-    def __init__(self, templates_dir: str = "templates"):
+    def __init__(self, templates_dir: str = "test_templates"):
         self.env = Environment(loader=FileSystemLoader(templates_dir))
         self.xml_generator = HbbTVXMLGenerator()
-        self.ensure_template_dir(templates_dir)
+        self.ensure_base_template(templates_dir)
         
-    def ensure_template_dir(self, templates_dir: str):
-        """Create templates directory if it doesn't exist"""
+    def ensure_base_template(self, templates_dir: str):
+        """Create base template if it doesn't exist"""
         if not os.path.exists(templates_dir):
             os.makedirs(templates_dir)
-            self.create_default_templates(templates_dir)
+        
+        base_template_path = os.path.join(templates_dir, "base.html")
+        if not os.path.exists(base_template_path):
+            self.create_base_template(base_template_path)
     
-    def create_default_templates(self, templates_dir: str):
+    def create_base_template(self, base_template_path: str):
         """Create default template files"""
         base_template = '''<!DOCTYPE html>
 <html>
