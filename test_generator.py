@@ -5,10 +5,12 @@ import re
 import shutil
 from typing import Dict, List, Union, Literal
 from bs4 import BeautifulSoup
+from xml_generator import HbbTVXMLGenerator
 
 class TestCaseGenerator:
     def __init__(self, templates_dir: str = "templates"):
         self.env = Environment(loader=FileSystemLoader(templates_dir))
+        self.xml_generator = HbbTVXMLGenerator()
         self.ensure_template_dir(templates_dir)
         
     def ensure_template_dir(self, templates_dir: str):
@@ -242,7 +244,7 @@ class TestCaseGenerator:
             test_info['additional_styles']
         )
         
-        # Save to files
+        # Save HTML files
         hbbtv_path = os.path.join(hbbtv_dir, "index.html")
         w3c_path = os.path.join(html_dir, "index.html")
         
@@ -250,6 +252,15 @@ class TestCaseGenerator:
             f.write(hbbtv_test)
         with open(w3c_path, "w") as f:
             f.write(w3c_test)
+            
+        # Generate HbbTV test harness XML files
+        https_required = test_info['metadata'].get('https_required', False)
+        self.xml_generator.generate_test_xml_files(
+            test_info['metadata']['test_id'],
+            test_info['metadata']['test_name'],
+            hbbtv_dir,
+            https_required
+        )
             
         # Copy any additional files from template directory (e.g., images, styles)
         for item in os.listdir(template_dir):
