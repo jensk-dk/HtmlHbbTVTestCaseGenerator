@@ -42,7 +42,7 @@
         testapi.reportStepResult(stepId, result, message);
         {% else %}
         console.log(`Step ${stepId}: ${result} - ${message}`);
-        const div = document.createElement("div");
+        const div = document.createElement('div');
         div.textContent = `Step ${stepId}: ${result} - ${message}`;
         div.className = result.toLowerCase();
         document.body.appendChild(div);
@@ -54,7 +54,7 @@
         testapi.endTest(result, message);
         {% else %}
         console.log(`Test ended: ${result} - ${message}`);
-        const div = document.createElement("div");
+        const div = document.createElement('div');
         div.textContent = `Test ended: ${result} - ${message}`;
         div.className = `test-end ${result.toLowerCase()}`;
         document.body.appendChild(div);
