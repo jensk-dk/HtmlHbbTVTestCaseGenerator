@@ -163,5 +163,5 @@ cython_debug/
 
 # Generated test files
 tests/
-*_hbbtv.html
-*_w3c.html
+tests/HbbTV/
+tests/Html/

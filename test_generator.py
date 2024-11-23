@@ -2,9 +2,9 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import json
 import re
+import shutil
 from typing import Dict, List, Union, Literal
 from bs4 import BeautifulSoup
-import glob
 
 class TestCaseGenerator:
     def __init__(self, templates_dir: str = "templates"):
@@ -195,23 +195,31 @@ class TestCaseGenerator:
         )
     
     def generate_from_template(self,
-                             template_path: str,
-                             output_dir: str = "tests") -> Dict[str, str]:
+                             template_dir: str,
+                             output_base_dir: str = "tests") -> Dict[str, str]:
         """
-        Generate both HbbTV and W3C versions of a test case from a template file
+        Generate both HbbTV and W3C versions of a test case from a template directory
         
         Args:
-            template_path: Path to the template file
-            output_dir: Directory to save the generated test files
+            template_dir: Path to the template directory containing test.html
+            output_base_dir: Base directory for output files
             
         Returns:
             Dictionary with paths to generated files
         """
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        template_path = os.path.join(template_dir, "test.html")
+        if not os.path.exists(template_path):
+            raise ValueError(f"No test.html found in {template_dir}")
             
         # Extract test information
         test_info = self.extract_test_info(template_path)
+        test_id = test_info['metadata']['test_id']
+        
+        # Create output directories
+        hbbtv_dir = os.path.join(output_base_dir, "HbbTV", test_id)
+        html_dir = os.path.join(output_base_dir, "Html", test_id)
+        os.makedirs(hbbtv_dir, exist_ok=True)
+        os.makedirs(html_dir, exist_ok=True)
         
         # Generate both versions
         hbbtv_test = self.generate_test_case(
@@ -235,14 +243,30 @@ class TestCaseGenerator:
         )
         
         # Save to files
-        test_id = test_info['metadata']['test_id']
-        hbbtv_path = os.path.join(output_dir, f"{test_id}_hbbtv.html")
-        w3c_path = os.path.join(output_dir, f"{test_id}_w3c.html")
+        hbbtv_path = os.path.join(hbbtv_dir, "index.html")
+        w3c_path = os.path.join(html_dir, "index.html")
         
         with open(hbbtv_path, "w") as f:
             f.write(hbbtv_test)
         with open(w3c_path, "w") as f:
             f.write(w3c_test)
+            
+        # Copy any additional files from template directory (e.g., images, styles)
+        for item in os.listdir(template_dir):
+            if item != "test.html":
+                src_path = os.path.join(template_dir, item)
+                if os.path.isfile(src_path):
+                    shutil.copy2(src_path, hbbtv_dir)
+                    shutil.copy2(src_path, html_dir)
+                elif os.path.isdir(src_path):
+                    hbbtv_dest = os.path.join(hbbtv_dir, item)
+                    html_dest = os.path.join(html_dir, item)
+                    if os.path.exists(hbbtv_dest):
+                        shutil.rmtree(hbbtv_dest)
+                    if os.path.exists(html_dest):
+                        shutil.rmtree(html_dest)
+                    shutil.copytree(src_path, hbbtv_dest)
+                    shutil.copytree(src_path, html_dest)
             
         return {
             "hbbtv": hbbtv_path,
@@ -253,24 +277,25 @@ class TestCaseGenerator:
                              templates_dir: str = "test_templates", 
                              output_dir: str = "tests") -> Dict[str, Dict[str, str]]:
         """
-        Generate test cases from all template files in the templates directory
+        Generate test cases from all template directories
         
         Args:
-            templates_dir: Directory containing template files
-            output_dir: Directory to save the generated test files
+            templates_dir: Root directory containing test case directories
+            output_dir: Base directory for output files
             
         Returns:
-            Dictionary mapping template names to their generated file paths
+            Dictionary mapping test IDs to their generated file paths
         """
         results = {}
-        template_files = glob.glob(os.path.join(templates_dir, "*.html"))
         
-        for template_path in template_files:
-            template_name = os.path.basename(template_path)
-            try:
-                results[template_name] = self.generate_from_template(template_path, output_dir)
-            except Exception as e:
-                print(f"Error processing {template_name}: {str(e)}")
+        # Find all directories in templates_dir
+        for item in os.listdir(templates_dir):
+            template_dir = os.path.join(templates_dir, item)
+            if os.path.isdir(template_dir):
+                try:
+                    results[item] = self.generate_from_template(template_dir, output_dir)
+                except Exception as e:
+                    print(f"Error processing {item}: {str(e)}")
                 
         return results
 
