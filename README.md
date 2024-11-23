@@ -43,7 +43,8 @@ tests/                   # Generated test cases
 
 ## Usage
 
-1. Create a test template in `test_templates/YOUR_TEST_ID/test.html`:
+1. Create a test template in `test_templates/YOUR_TEST_ID/test.html`. Here's an example from `test_templates/TEST_001_step_sequence/test.html`:
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -51,25 +52,47 @@ tests/                   # Generated test cases
     <script>
     // Test metadata
     var TEST_METADATA = {
-        "test_id": "YOUR_TEST_ID",
-        "test_name": "Your Test Name",
+        "test_id": "TEST_001",
+        "test_name": "Example Test Case - Step Sequence",
         "https_required": false
     };
 
-    // Initialization code
+    // Test initialization code
     var TEST_INIT = `
-        // Your initialization code
+        var testSteps = ['step1', 'step2', 'step3'];
+        var currentStep = 0;
     `;
 
     // Test execution code
     var TEST_BODY = `
-        // Your test steps
+        function checkStep() {
+            switch(testSteps[currentStep]) {
+                case 'step1':
+                    reportStep(1, "PASS", "First step completed");
+                    currentStep++;
+                    setTimeout(checkStep, 1000);
+                    break;
+                    
+                case 'step2':
+                    reportStep(2, "PASS", "Second step completed");
+                    currentStep++;
+                    setTimeout(checkStep, 1000);
+                    break;
+                    
+                case 'step3':
+                    reportStep(3, "PASS", "Third step completed");
+                    endTest("PASS", "All steps completed successfully");
+                    break;
+            }
+        }
+        
+        checkStep();
     `;
     </script>
 </head>
 <body>
     <div id="test-container">
-        <!-- Your test-specific HTML -->
+        <p>This test verifies a sequence of steps with timing.</p>
     </div>
 </body>
 </html>
@@ -77,10 +100,56 @@ tests/                   # Generated test cases
 
 2. Run the generator:
 ```bash
-python test_generator.py
+$ python test_generator.py
+Generated test files:
+
+From template TEST_001_step_sequence:
+  HbbTV: tests/HbbTV/TEST_001/index.html
+  W3C: tests/Html/TEST_001/index.html
 ```
 
-The generator will create both HbbTV and W3C versions in the `tests` directory.
+3. Check the generated files:
+```bash
+$ ls -R tests/
+tests/:
+HbbTV  Html
+
+tests/HbbTV:
+TEST_001
+
+tests/HbbTV/TEST_001:
+ait.xml  implementation.xml  index.html  playoutset.xml
+
+tests/Html:
+TEST_001
+
+tests/Html/TEST_001:
+index.html
+```
+
+The generator creates:
+
+- **W3C Browser Version** (`tests/Html/TEST_001/index.html`):
+  - Uses console.log for debugging
+  - Shows test progress on screen
+  - Visual pass/fail indicators
+  - No HbbTV dependencies
+
+- **HbbTV Version** (`tests/HbbTV/TEST_001/`):
+  - `index.html` - HbbTV test case
+  - `implementation.xml` - Test implementation details:
+    ```xml
+    <?xml version="1.0" ?>
+    <testImplementation xmlns="http://www.hbbtv.org/2012/testImplementation" id="TEST_001">
+      <playoutSets>
+        <playoutSet id="1" definition="playoutset.xml"/>
+      </playoutSets>
+    </testImplementation>
+    ```
+  - `ait.xml` - Application Information Table
+  - `playoutset.xml` - DVB playout configuration
+
+Both versions maintain identical test logic and functionality while using platform-appropriate APIs for reporting and execution.
 
 ## Requirements
 
