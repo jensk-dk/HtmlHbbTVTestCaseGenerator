@@ -1,20 +1,11 @@
 # HtmlHbbTVTestCaseGenerator
 
-A Python script that generates both HTML and HbbTV test cases from a templated common code base. The generator creates functionally identical test cases that can run in standard W3C browsers and HbbTV test harnesses.
-
-## Specifications
-
-The generator follows these specifications:
-
-- [HbbTV Test Specification v2024-1](https://www.hbbtv.org/wp-content/uploads/2024/03/HbbTV_Test_Spec_v2024-1_v1.0.pdf) - Defines the test harness requirements, APIs, and XML formats
-- [ETSI TS 102 796](https://www.etsi.org/deliver/etsi_ts/102700_102799/102796/01.07.01_60/ts_102796v010701p.pdf) - Core HbbTV technical specification
+A Python script that generates both HTML and HbbTV test cases from a templated common code base.
 
 ## Features
 
-- Generates both HbbTV and W3C browser compatible test cases
-- Uses a template system for creating test cases
-- Maintains identical functionality between versions
-- Generates required HbbTV test harness XML files:
+- Generate both HbbTV and W3C browser test cases from a single template
+- Automatic generation of HbbTV test harness XML files:
   - `implementation.xml` - Test implementation details
   - `ait.xml` - Application Information Table
   - `playoutset.xml` - DVB playout configuration
@@ -69,27 +60,33 @@ You can try the W3C version of an example test case [here](https://jensk-dk.gith
 
     // Test initialization code
     var TEST_INIT = `
-        var testSteps = ['step1', 'step2', 'step3'];
+        var testSteps = ["step1", "step2", "step3"];
         var currentStep = 0;
     `;
 
     // Test execution code
     var TEST_BODY = `
-        function checkStep() {
+        async function checkStep() {
             switch(testSteps[currentStep]) {
-                case 'step1':
+                case "step1":
                     reportStep(1, "PASS", "First step completed");
                     currentStep++;
                     setTimeout(checkStep, 1000);
                     break;
                     
-                case 'step2':
-                    reportStep(2, "PASS", "Second step completed");
-                    currentStep++;
-                    setTimeout(checkStep, 1000);
+                case "step2":
+                    const manualResult = await askManual("Did you see the first step complete successfully?");
+                    if (manualResult) {
+                        reportStep(2, "PASS", "Manual verification successful");
+                        currentStep++;
+                        setTimeout(checkStep, 1000);
+                    } else {
+                        reportStep(2, "FAIL", "Manual verification failed");
+                        endTest("FAIL", "Manual verification failed at step 2");
+                    }
                     break;
                     
-                case 'step3':
+                case "step3":
                     reportStep(3, "PASS", "Third step completed");
                     endTest("PASS", "All steps completed successfully");
                     break;
@@ -102,76 +99,35 @@ You can try the W3C version of an example test case [here](https://jensk-dk.gith
 </head>
 <body>
     <div id="test-container">
-        <p>This test verifies a sequence of steps with timing.</p>
+        <p>This test verifies a sequence of steps with timing and manual verification.</p>
     </div>
 </body>
 </html>
 ```
 
+The test template supports:
+- Test metadata (ID, name, HTTPS requirement)
+- Initialization code (variables, setup)
+- Test execution code (steps, logic)
+- Manual verification using `askManual(question)`
+- Progress reporting with `reportStep(id, result, message)`
+- Test completion with `endTest(result, message)`
+
 2. Run the generator:
 ```bash
-$ python test_generator.py
-Generated test files:
-
-From template TEST_001_step_sequence:
-  HbbTV: tests/HbbTV/TEST_001/index.html
-  W3C: tests/Html/TEST_001/index.html
+python test_generator.py
 ```
 
-3. Check the generated files:
-```bash
-$ ls -R tests/
-tests/:
-HbbTV  Html
+3. Find the generated test cases in:
+   - `tests/HbbTV/TEST_001/` - HbbTV test case with XML files
+   - `tests/Html/TEST_001/` - W3C browser test case
 
-tests/HbbTV:
-TEST_001
-
-tests/HbbTV/TEST_001:
-ait.xml  implementation.xml  index.html  playoutset.xml
-
-tests/Html:
-TEST_001
-
-tests/Html/TEST_001:
-index.html
-```
-
-The generator creates:
-
-- **W3C Browser Version** (`tests/Html/TEST_001/index.html`):
-  - Uses console.log for debugging
-  - Shows test progress on screen
-  - Visual pass/fail indicators
-  - No HbbTV dependencies
-
-- **HbbTV Version** (`tests/HbbTV/TEST_001/`):
-  - `index.html` - HbbTV test case
-  - `implementation.xml` - Test implementation details:
-    ```xml
-    <?xml version="1.0" ?>
-    <testImplementation xmlns="http://www.hbbtv.org/2012/testImplementation" id="TEST_001">
-      <playoutSets>
-        <playoutSet id="1" definition="playoutset.xml"/>
-      </playoutSets>
-    </testImplementation>
-    ```
-  - `ait.xml` - Application Information Table
-  - `playoutset.xml` - DVB playout configuration
-
-Both versions maintain identical test logic and functionality while using platform-appropriate APIs for reporting and execution.
-
-## Requirements
-
-- Python 3.6+
-- Jinja2
-- BeautifulSoup4
-
-## Installation
-
-```bash
-pip install jinja2 beautifulsoup4
-```
+4. Run the tests:
+   - HbbTV: Load in test harness
+   - W3C: Open in browser or run with Playwright:
+     ```bash
+     pytest tests/test_w3c.py --browser chromium
+     ```
 
 ## License
 
