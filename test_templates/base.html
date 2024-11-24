@@ -37,6 +37,28 @@
         {{ test_body }}
     }
 
+    function askManual(question) {
+        return new Promise((resolve) => {
+            {% if target == "hbbtv" %}
+            testapi.analyzeManual(question, function(success) {
+                resolve(success);
+            });
+            {% else %}
+            const promptDiv = document.createElement('div');
+            promptDiv.className = 'manual-prompt';
+            promptDiv.innerHTML = `
+                <div class="question">${question}</div>
+                <div class="buttons">
+                    <button onclick="this.parentElement.parentElement.remove(); window._manualResolve(true)">Yes</button>
+                    <button onclick="this.parentElement.parentElement.remove(); window._manualResolve(false)">No</button>
+                </div>
+            `;
+            document.body.appendChild(promptDiv);
+            window._manualResolve = resolve;
+            {% endif %}
+        });
+    }
+
     function reportStep(stepId, result, message) {
         {% if target == "hbbtv" %}
         testapi.reportStepResult(stepId, result, message);
@@ -68,6 +90,41 @@
     .test-end { 
         margin-top: 20px;
         font-weight: bold;
+    }
+    .manual-prompt {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 2px solid #333;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        text-align: center;
+    }
+    .manual-prompt .question {
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+    .manual-prompt .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    .manual-prompt button {
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .manual-prompt button:first-child {
+        background: #4CAF50;
+        color: white;
+        border: none;
+    }
+    .manual-prompt button:last-child {
+        background: #f44336;
+        color: white;
+        border: none;
     }
     {% endif %}
     {{ additional_styles }}

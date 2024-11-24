@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Example Test Case</title>
     <script>
-    // Test metadata (used by generator)
+    // Test metadata
     var TEST_METADATA = {
         "test_id": "TEST_001",
         "test_name": "Example Test Case - Step Sequence",
@@ -13,27 +11,33 @@
 
     // Test initialization code
     var TEST_INIT = `
-        var testSteps = ['step1', 'step2', 'step3'];
+        var testSteps = ["step1", "step2", "step3"];
         var currentStep = 0;
     `;
 
     // Test execution code
     var TEST_BODY = `
-        function checkStep() {
+        async function checkStep() {
             switch(testSteps[currentStep]) {
-                case 'step1':
+                case "step1":
                     reportStep(1, "PASS", "First step completed");
                     currentStep++;
                     setTimeout(checkStep, 1000);
                     break;
                     
-                case 'step2':
-                    reportStep(2, "PASS", "Second step completed");
-                    currentStep++;
-                    setTimeout(checkStep, 1000);
+                case "step2":
+                    const manualResult = await askManual("Did you see the first step complete successfully?");
+                    if (manualResult) {
+                        reportStep(2, "PASS", "Manual verification successful");
+                        currentStep++;
+                        setTimeout(checkStep, 1000);
+                    } else {
+                        reportStep(2, "FAIL", "Manual verification failed");
+                        endTest("FAIL", "Manual verification failed at step 2");
+                    }
                     break;
                     
-                case 'step3':
+                case "step3":
                     reportStep(3, "PASS", "Third step completed");
                     endTest("PASS", "All steps completed successfully");
                     break;
@@ -45,9 +49,8 @@
     </script>
 </head>
 <body>
-    <!-- Optional: Add any HTML elements needed for the test -->
     <div id="test-container">
-        <p>This test verifies a sequence of steps with timing.</p>
+        <p>This test verifies a sequence of steps with timing and manual verification.</p>
     </div>
 </body>
 </html>
