@@ -43,6 +43,14 @@ tests/                           # Generated test cases (not in git)
 
 The generator uses `base.html` as a template to create both HbbTV and W3C versions of each test case. Test cases are organized in their own directories under `test_templates/`, with each test case defined in a `test.html` file.
 
+## Try it out
+
+You can try the W3C version of an example test case [here](https://jensk-dk.github.io/HtmlHbbTVTestCaseGenerator/test/TEST_001.html). This test demonstrates:
+1. Automatic test steps
+2. Manual verification with Yes/No buttons
+3. Success and failure paths
+4. Progress reporting
+
 ## Usage
 
 1. Create a test template in `test_templates/YOUR_TEST_ID/test.html`. Here's an example from `test_templates/TEST_001_step_sequence/test.html`:
