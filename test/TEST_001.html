@@ -3,22 +3,28 @@
 <head>
     <meta charset="utf-8">
     <title>TEST_001 - Example Test Case - Step Sequence</title>
+    
     <script>
     // Initialize test variables
     var testSteps = ["step1", "step2", "step3"];
-    var currentStep = 0;
+        var currentStep = 0;
 
+    
     window.onload = function() {
         startTest();
     };
+    
 
     function startTest() {
+        
         console.log("Starting test TEST_001");
+        
+        
         runTest();
     }
 
     function runTest() {
-        function checkStep() {
+        async function checkStep() {
             switch(testSteps[currentStep]) {
                 case "step1":
                     reportStep(1, "PASS", "First step completed");
@@ -27,9 +33,15 @@
                     break;
                     
                 case "step2":
-                    reportStep(2, "PASS", "Second step completed");
-                    currentStep++;
-                    setTimeout(checkStep, 1000);
+                    const manualResult = await askManual("Did you see the first step complete successfully?");
+                    if (manualResult) {
+                        reportStep(2, "PASS", "Manual verification successful");
+                        currentStep++;
+                        setTimeout(checkStep, 1000);
+                    } else {
+                        reportStep(2, "FAIL", "Manual verification failed");
+                        endTest("FAIL", "Manual verification failed at step 2");
+                    }
                     break;
                     
                 case "step3":
@@ -42,37 +54,99 @@
         checkStep();
     }
 
+    function askManual(question) {
+        return new Promise((resolve) => {
+            
+            const promptDiv = document.createElement('div');
+            promptDiv.className = 'manual-prompt';
+            promptDiv.innerHTML = `
+                <div class="question">${question}</div>
+                <div class="buttons">
+                    <button onclick="this.parentElement.parentElement.remove(); window._manualResolve(true)">Yes</button>
+                    <button onclick="this.parentElement.parentElement.remove(); window._manualResolve(false)">No</button>
+                </div>
+            `;
+            document.body.appendChild(promptDiv);
+            window._manualResolve = resolve;
+            
+        });
+    }
+
     function reportStep(stepId, result, message) {
+        
         console.log(`Step ${stepId}: ${result} - ${message}`);
-        const div = document.createElement("div");
+        const div = document.createElement('div');
         div.textContent = `Step ${stepId}: ${result} - ${message}`;
         div.className = result.toLowerCase();
         document.body.appendChild(div);
+        
     }
 
     function endTest(result, message) {
+        
         console.log(`Test ended: ${result} - ${message}`);
-        const div = document.createElement("div");
+        const div = document.createElement('div');
         div.textContent = `Test ended: ${result} - ${message}`;
         div.className = `test-end ${result.toLowerCase()}`;
         document.body.appendChild(div);
+        
     }
     </script>
     <style>
+    
     .pass { color: green; }
     .fail { color: red; }
     .test-end { 
         margin-top: 20px;
         font-weight: bold;
     }
+    .manual-prompt {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 2px solid #333;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        text-align: center;
+    }
+    .manual-prompt .question {
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+    .manual-prompt .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    .manual-prompt button {
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .manual-prompt button:first-child {
+        background: #4CAF50;
+        color: white;
+        border: none;
+    }
+    .manual-prompt button:last-child {
+        background: #f44336;
+        color: white;
+        border: none;
+    }
+    
+    
     </style>
 </head>
 <body>
     <h1>Example Test Case - Step Sequence</h1>
     <p>Test ID: TEST_001</p>
+    
     <div id="test-output"></div>
+    
     <div id="test-container">
-        <p>This test verifies a sequence of steps with timing.</p>
-    </div>
+<p>This test verifies a sequence of steps with timing and manual verification.</p>
+</div>
 </body>
 </html>
