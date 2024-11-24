@@ -1,0 +1,58 @@
+image: mcr.microsoft.com/playwright:v1.40.0-jammy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+
+cache:
+  paths:
+    - .pip-cache/
+    - .pytest_cache/
+    - node_modules/
+
+stages:
+  - setup
+  - test
+  - deploy
+
+install-dependencies:
+  stage: setup
+  script:
+    - pip install jinja2 beautifulsoup4 pytest pytest-playwright
+    - playwright install chromium
+  artifacts:
+    paths:
+      - .pip-cache/
+    expire_in: 1 week
+
+test-generator:
+  stage: test
+  script:
+    - python test_generator.py
+    - test -f tests/Html/TEST_001/index.html || (echo "W3C test file not generated" && exit 1)
+    - test -f tests/HbbTV/TEST_001/index.html || (echo "HbbTV test file not generated" && exit 1)
+    - test -f tests/HbbTV/TEST_001/implementation.xml || (echo "HbbTV implementation.xml not generated" && exit 1)
+    - test -f tests/HbbTV/TEST_001/ait.xml || (echo "HbbTV ait.xml not generated" && exit 1)
+    - test -f tests/HbbTV/TEST_001/playoutset.xml || (echo "HbbTV playoutset.xml not generated" && exit 1)
+
+test-w3c-browser:
+  stage: test
+  script:
+    - python test_generator.py
+    - pytest tests/test_w3c.py --browser chromium --headed
+  artifacts:
+    when: on_failure
+    paths:
+      - test-results/
+    expire_in: 1 week
+
+pages:
+  stage: deploy
+  script:
+    - python test_generator.py
+    - mkdir -p public/test
+    - cp tests/Html/TEST_001/index.html public/test/TEST_001.html
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
