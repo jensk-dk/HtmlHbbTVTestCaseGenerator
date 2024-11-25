@@ -5,6 +5,10 @@
     <title>TEST_001 - Example Test Case - Step Sequence</title>
     
     <script>
+    // Initialize test variables
+    var testSteps = ["step1", "step2", "step3"];
+        var currentStep = 0;
+
     
     window.onload = function() {
         startTest();
@@ -16,28 +20,31 @@
         console.log("Starting test TEST_001");
         
         
-        var testSteps = ['step1', 'step2', 'step3'];
-        var currentStep = 0;
-        
         runTest();
     }
 
     function runTest() {
-        function checkStep() {
+        async function checkStep() {
             switch(testSteps[currentStep]) {
-                case 'step1':
+                case "step1":
                     reportStep(1, "PASS", "First step completed");
                     currentStep++;
                     setTimeout(checkStep, 1000);
                     break;
                     
-                case 'step2':
-                    reportStep(2, "PASS", "Second step completed");
-                    currentStep++;
-                    setTimeout(checkStep, 1000);
+                case "step2":
+                    const manualResult = await askManual("Did you see the first step complete successfully?");
+                    if (manualResult) {
+                        reportStep(2, "PASS", "Manual verification successful");
+                        currentStep++;
+                        setTimeout(checkStep, 1000);
+                    } else {
+                        reportStep(2, "FAIL", "Manual verification failed");
+                        endTest("FAIL", "Manual verification failed at step 2");
+                    }
                     break;
                     
-                case 'step3':
+                case "step3":
                     reportStep(3, "PASS", "Third step completed");
                     endTest("PASS", "All steps completed successfully");
                     break;
@@ -47,13 +54,31 @@
         checkStep();
     }
 
+    function askManual(question) {
+        return new Promise((resolve) => {
+            
+            const promptDiv = document.createElement('div');
+            promptDiv.className = 'manual-prompt';
+            promptDiv.innerHTML = `
+                <div class="question">${question}</div>
+                <div class="buttons">
+                    <button onclick="this.parentElement.parentElement.remove(); window._manualResolve(true)">Yes</button>
+                    <button onclick="this.parentElement.parentElement.remove(); window._manualResolve(false)">No</button>
+                </div>
+            `;
+            document.body.appendChild(promptDiv);
+            window._manualResolve = resolve;
+            
+        });
+    }
+
     function reportStep(stepId, result, message) {
         
         console.log(`Step ${stepId}: ${result} - ${message}`);
         const div = document.createElement('div');
         div.textContent = `Step ${stepId}: ${result} - ${message}`;
         div.className = result.toLowerCase();
-        document.body.appendChild(div);
+        document.getElementById('test-output').appendChild(div);
         
     }
 
@@ -63,11 +88,44 @@
         const div = document.createElement('div');
         div.textContent = `Test ended: ${result} - ${message}`;
         div.className = `test-end ${result.toLowerCase()}`;
-        document.body.appendChild(div);
+        document.getElementById('test-output').appendChild(div);
         
     }
     </script>
     <style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 50% 50%;
+        grid-template-rows: 50vh 50vh;
+        min-height: 100vh;
+    }
+    
+    #logo-metadata {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 20px;
+        border-right: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        overflow: auto;
+    }
+    
+    #test-elements {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 20px;
+        border-right: 1px solid #ccc;
+        overflow: auto;
+    }
+    
+    #test-output {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        padding: 20px;
+        overflow: auto;
+    }
+    
     
     .pass { color: green; }
     .fail { color: red; }
@@ -75,18 +133,61 @@
         margin-top: 20px;
         font-weight: bold;
     }
+    .manual-prompt {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 2px solid #333;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        text-align: center;
+        z-index: 1000;
+    }
+    .manual-prompt .question {
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+    .manual-prompt .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    .manual-prompt button {
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .manual-prompt button:first-child {
+        background: #4CAF50;
+        color: white;
+        border: none;
+    }
+    .manual-prompt button:last-child {
+        background: #f44336;
+        color: white;
+        border: none;
+    }
     
     
     </style>
 </head>
 <body>
-    <h1>Example Test Case - Step Sequence</h1>
-    <p>Test ID: TEST_001</p>
-    
-    <div id="test-output"></div>
-    
-    <div id="test-container">
-<p>This test verifies a sequence of steps with timing.</p>
+    <div id="logo-metadata">
+        <img src="../../RES/logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px;">
+        <h1>Example Test Case - Step Sequence</h1>
+        <p>Test ID: TEST_001</p>
+    </div>
+    <div id="test-elements">
+        <div id="test-container">
+<p>This test verifies a sequence of steps with timing and manual verification.</p>
 </div>
+    </div>
+    <div id="test-output">
+        
+        <h2>Test Output</h2>
+        
+    </div>
 </body>
 </html>
