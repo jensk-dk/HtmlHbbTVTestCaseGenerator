@@ -1,3 +1,4 @@
+from xml_generator import HbbTVXMLGenerator
 from jinja2 import Environment, FileSystemLoader
 import os
 import json
