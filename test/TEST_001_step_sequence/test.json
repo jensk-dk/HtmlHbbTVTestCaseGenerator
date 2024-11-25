@@ -1,0 +1,6 @@
+{
+    "name": "Basic Step Sequence Test",
+    "init": "var stepCount = 0;",
+    "body": "stepCount++;\\nreportStep(stepCount, 'PASS', 'Step ' + stepCount + ' completed');\\n\\nif (stepCount < 3) {\\n    setTimeout(runTest, 1000);\\n} else {\\n    endTest('PASS', 'All steps completed successfully');\\n}",
+    "styles": ""
+}

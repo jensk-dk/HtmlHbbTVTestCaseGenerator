@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>TEST_001_step_sequence - Basic Step Sequence Test</title>
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 50% 50%;
+        grid-template-rows: 50vh 50vh;
+        min-height: 100vh;
+    }
+    
+    #logo-metadata {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 20px;
+        border-right: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        overflow: auto;
+    }
+    
+    #test-elements {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 20px;
+        border-right: 1px solid #ccc;
+        overflow: auto;
+    }
+    
+    #test-output {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        padding: 20px;
+        overflow: auto;
+    }
+    
+    .pass { color: green; }
+    .fail { color: red; }
+    .test-end { 
+        margin-top: 20px;
+        font-weight: bold;
+    }
+    </style>
+    <script>
+    // Initialize test variables
+    var stepCount = 0;
+
+    window.onload = function() {
+        startTest();
+    };
+
+    function startTest() {
+        console.log("Starting test TEST_001_step_sequence");
+        runTest();
+    }
+
+    function runTest() {
+        stepCount++;
+        reportStep(stepCount, 'PASS', 'Step ' + stepCount + ' completed');
+
+        if (stepCount < 3) {
+            setTimeout(runTest, 1000);
+        } else {
+            endTest('PASS', 'All steps completed successfully');
+        }
+    }
+
+    function reportStep(stepId, result, message) {
+        console.log(`Step ${stepId}: ${result} - ${message}`);
+        const div = document.createElement('div');
+        div.textContent = `Step ${stepId}: ${result} - ${message}`;
+        div.className = result.toLowerCase();
+        document.getElementById('test-output').appendChild(div);
+    }
+
+    function endTest(result, message) {
+        console.log(`Test ended: ${result} - ${message}`);
+        const div = document.createElement('div');
+        div.textContent = `Test ended: ${result} - ${message}`;
+        div.className = `test-end ${result.toLowerCase()}`;
+        document.getElementById('test-output').appendChild(div);
+    }
+    </script>
+</head>
+<body>
+    <div id="logo-metadata">
+        <img src="../../RES/logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px;">
+        <h1>Basic Step Sequence Test</h1>
+        <p>Test ID: TEST_001_step_sequence</p>
+    </div>
+    <div id="test-elements">
+        <p>This test demonstrates a basic sequence of steps with automatic progression.</p>
+        <p>The test will execute 3 steps with a 1-second delay between each step.</p>
+    </div>
+    <div id="test-output">
+        <h2>Test Output</h2>
+    </div>
+</body>
+</html>
