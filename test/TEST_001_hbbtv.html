@@ -4,16 +4,21 @@
     <meta charset="utf-8">
     <title>TEST_001 - Example Test Case - Step Sequence</title>
     
+    <script type="text/javascript" src="../../RES/testsuite.js"></script>
+    
     <script>
     
+    var testapi;
     window.onload = function() {
+        testapi = new HbbTVTestAPI();
+        testapi.init();
         startTest();
     };
     
 
     function startTest() {
         
-        console.log("Starting test TEST_001");
+        testapi.reportMessage("Starting test TEST_001");
         
         
         var testSteps = ['step1', 'step2', 'step3'];
@@ -49,32 +54,17 @@
 
     function reportStep(stepId, result, message) {
         
-        console.log(`Step ${stepId}: ${result} - ${message}`);
-        const div = document.createElement('div');
-        div.textContent = `Step ${stepId}: ${result} - ${message}`;
-        div.className = result.toLowerCase();
-        document.body.appendChild(div);
+        testapi.reportStepResult(stepId, result, message);
         
     }
 
     function endTest(result, message) {
         
-        console.log(`Test ended: ${result} - ${message}`);
-        const div = document.createElement('div');
-        div.textContent = `Test ended: ${result} - ${message}`;
-        div.className = `test-end ${result.toLowerCase()}`;
-        document.body.appendChild(div);
+        testapi.endTest(result, message);
         
     }
     </script>
     <style>
-    
-    .pass { color: green; }
-    .fail { color: red; }
-    .test-end { 
-        margin-top: 20px;
-        font-weight: bold;
-    }
     
     
     </style>
@@ -82,8 +72,6 @@
 <body>
     <h1>Example Test Case - Step Sequence</h1>
     <p>Test ID: TEST_001</p>
-    
-    <div id="test-output"></div>
     
     <div id="test-container">
 <p>This test verifies a sequence of steps with timing.</p>
