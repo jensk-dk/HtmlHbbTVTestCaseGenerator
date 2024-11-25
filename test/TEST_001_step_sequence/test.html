@@ -43,6 +43,58 @@
         margin-top: 20px;
         font-weight: bold;
     }
+    
+    .manual-prompt {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 2px solid #333;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        text-align: center;
+        z-index: 1000;
+    }
+    
+    .manual-prompt .question {
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+    
+    .manual-prompt .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    
+    .manual-prompt button {
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    
+    .manual-prompt button:first-child {
+        background: #4CAF50;
+        color: white;
+        border: none;
+    }
+    
+    .manual-prompt button:last-child {
+        background: #f44336;
+        color: white;
+        border: none;
+    }
+    
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
     </style>
     <script>
     // Initialize test variables
@@ -59,13 +111,40 @@
 
     function runTest() {
         stepCount++;
-        reportStep(stepCount, 'PASS', 'Step ' + stepCount + ' completed');
-
-        if (stepCount < 3) {
+        if (stepCount === 1) {
+            reportStep(stepCount, 'PASS', 'Automatic step completed');
             setTimeout(runTest, 1000);
+        } else if (stepCount === 2) {
+            askManual('Did you see the previous step pass?').then(function(result) {
+                reportStep(stepCount, result ? 'PASS' : 'FAIL', 'Manual verification ' + (result ? 'succeeded' : 'failed'));
+                setTimeout(runTest, 1000);
+            });
         } else {
-            endTest('PASS', 'All steps completed successfully');
+            askManual('Is everything working as expected?').then(function(result) {
+                reportStep(stepCount, result ? 'PASS' : 'FAIL', 'Final verification ' + (result ? 'succeeded' : 'failed'));
+                endTest(result ? 'PASS' : 'FAIL', 'Test completed with ' + (result ? 'success' : 'failures'));
+            });
         }
+    }
+
+    function askManual(question) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            document.body.appendChild(overlay);
+
+            const promptDiv = document.createElement('div');
+            promptDiv.className = 'manual-prompt';
+            promptDiv.innerHTML = `
+                <div class="question">${question}</div>
+                <div class="buttons">
+                    <button onclick="this.closest('.manual-prompt').remove(); document.querySelector('.overlay').remove(); window._manualResolve(true)">Yes</button>
+                    <button onclick="this.closest('.manual-prompt').remove(); document.querySelector('.overlay').remove(); window._manualResolve(false)">No</button>
+                </div>
+            `;
+            document.body.appendChild(promptDiv);
+            window._manualResolve = resolve;
+        });
     }
 
     function reportStep(stepId, result, message) {
@@ -92,8 +171,12 @@
         <p>Test ID: TEST_001_step_sequence</p>
     </div>
     <div id="test-elements">
-        <p>This test demonstrates a basic sequence of steps with automatic progression.</p>
-        <p>The test will execute 3 steps with a 1-second delay between each step.</p>
+        <p>This test demonstrates a sequence of steps with both automatic and manual verification:</p>
+        <ol>
+            <li>Automatic step that always passes</li>
+            <li>Manual verification of the first step</li>
+            <li>Final manual verification of the entire test</li>
+        </ol>
     </div>
     <div id="test-output">
         <h2>Test Output</h2>
