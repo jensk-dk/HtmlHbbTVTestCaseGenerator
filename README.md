@@ -36,11 +36,17 @@ The generator uses `base.html` as a template to create both HbbTV and W3C versio
 
 ## Try it out
 
-You can try the W3C version of an example test case [here](https://jensk-dk.github.io/HtmlHbbTVTestCaseGenerator/test/TEST_001.html). This test demonstrates:
-1. Automatic test steps
-2. Manual verification with Yes/No buttons
-3. Success and failure paths
-4. Progress reporting
+You can try the W3C version of an example test case [here](https://jensk-dk.github.io/HtmlHbbTVTestCaseGenerator/test/TEST_001_step_sequence/test.html). This test demonstrates:
+1. Grid-based layout with:
+   - Top left: Logo and test metadata
+   - Bottom left: Test-specific HTML elements
+   - Right half: Test output and evaluation
+2. Automatic and manual test steps
+3. Manual verification with:
+   - Semi-transparent overlay for focus
+   - Clear Yes/No buttons with visual feedback
+   - Proper cleanup after response
+4. Success and failure paths with color-coded output
 
 ## Usage
 
@@ -54,52 +60,54 @@ You can try the W3C version of an example test case [here](https://jensk-dk.gith
     // Test metadata
     var TEST_METADATA = {
         "test_id": "TEST_001",
-        "test_name": "Example Test Case - Step Sequence",
+        "test_name": "Basic Step Sequence Test",
         "https_required": false
     };
 
     // Test initialization code
     var TEST_INIT = `
-        var testSteps = ["step1", "step2", "step3"];
-        var currentStep = 0;
+        var stepCount = 0;
     `;
 
     // Test execution code
     var TEST_BODY = `
-        async function checkStep() {
-            switch(testSteps[currentStep]) {
-                case "step1":
-                    reportStep(1, "PASS", "First step completed");
-                    currentStep++;
-                    setTimeout(checkStep, 1000);
-                    break;
-                    
-                case "step2":
-                    const manualResult = await askManual("Did you see the first step complete successfully?");
-                    if (manualResult) {
-                        reportStep(2, "PASS", "Manual verification successful");
-                        currentStep++;
-                        setTimeout(checkStep, 1000);
-                    } else {
-                        reportStep(2, "FAIL", "Manual verification failed");
-                        endTest("FAIL", "Manual verification failed at step 2");
-                    }
-                    break;
-                    
-                case "step3":
-                    reportStep(3, "PASS", "Third step completed");
-                    endTest("PASS", "All steps completed successfully");
-                    break;
-            }
+        stepCount++;
+        if (stepCount === 1) {
+            reportStep(stepCount, 'PASS', 'Automatic step completed');
+            setTimeout(runTest, 1000);
+        } else if (stepCount === 2) {
+            askManual('Did you see the previous step pass?').then(function(result) {
+                reportStep(stepCount, result ? 'PASS' : 'FAIL', 
+                    'Manual verification ' + (result ? 'succeeded' : 'failed'));
+                setTimeout(runTest, 1000);
+            });
+        } else {
+            askManual('Is everything working as expected?').then(function(result) {
+                reportStep(stepCount, result ? 'PASS' : 'FAIL', 
+                    'Final verification ' + (result ? 'succeeded' : 'failed'));
+                endTest(result ? 'PASS' : 'FAIL', 
+                    'Test completed with ' + (result ? 'success' : 'failures'));
+            });
         }
-        
-        checkStep();
+    `;
+
+    // Additional styles for this test
+    var TEST_STYLES = `
+        #test-elements ol {
+            margin-left: 20px;
+            line-height: 1.5;
+        }
     `;
     </script>
 </head>
 <body>
-    <div id="test-container">
-        <p>This test verifies a sequence of steps with timing and manual verification.</p>
+    <div id="test-elements">
+        <p>This test demonstrates a sequence of steps with both automatic and manual verification:</p>
+        <ol>
+            <li>Automatic step that always passes</li>
+            <li>Manual verification of the first step</li>
+            <li>Final manual verification of the entire test</li>
+        </ol>
     </div>
 </body>
 </html>
@@ -109,9 +117,11 @@ The test template supports:
 - Test metadata (ID, name, HTTPS requirement)
 - Initialization code (variables, setup)
 - Test execution code (steps, logic)
-- Manual verification using `askManual(question)`
-- Progress reporting with `reportStep(id, result, message)`
-- Test completion with `endTest(result, message)`
+- Manual verification using `askManual(question)` with overlay and buttons
+- Progress reporting with `reportStep(id, result, message)` in the right panel
+- Test completion with `endTest(result, message)` and color-coded status
+- Additional styles for test-specific customization
+- Grid-based layout with dedicated areas for logo, metadata, test elements, and output
 
 2. Run the generator:
 ```bash
