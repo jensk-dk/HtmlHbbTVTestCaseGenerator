@@ -162,7 +162,8 @@ cython_debug/
 #.idea/
 
 # Generated test files
-tests/
 tests/HbbTV/
 tests/Html/
 !tests/test_w3c.py
+!tests/TEST_001_w3c.html
+!tests/TEST_001_hbbtv.html

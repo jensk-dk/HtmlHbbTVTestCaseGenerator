@@ -67,7 +67,7 @@
         const div = document.createElement('div');
         div.textContent = `Step ${stepId}: ${result} - ${message}`;
         div.className = result.toLowerCase();
-        document.body.appendChild(div);
+        document.getElementById('test-output').appendChild(div);
         {% endif %}
     }
 
@@ -79,11 +79,44 @@
         const div = document.createElement('div');
         div.textContent = `Test ended: ${result} - ${message}`;
         div.className = `test-end ${result.toLowerCase()}`;
-        document.body.appendChild(div);
+        document.getElementById('test-output').appendChild(div);
         {% endif %}
     }
     </script>
     <style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 50% 50%;
+        grid-template-rows: 50vh 50vh;
+        min-height: 100vh;
+    }
+    
+    #logo-metadata {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 20px;
+        border-right: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        overflow: auto;
+    }
+    
+    #test-elements {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 20px;
+        border-right: 1px solid #ccc;
+        overflow: auto;
+    }
+    
+    #test-output {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        padding: 20px;
+        overflow: auto;
+    }
+    
     {% if target == "w3c" %}
     .pass { color: green; }
     .fail { color: red; }
@@ -101,6 +134,7 @@
         padding: 20px;
         box-shadow: 0 0 10px rgba(0,0,0,0.5);
         text-align: center;
+        z-index: 1000;
     }
     .manual-prompt .question {
         margin-bottom: 20px;
@@ -131,11 +165,18 @@
     </style>
 </head>
 <body>
-    <h1>{{ test_name }}</h1>
-    <p>Test ID: {{ test_id }}</p>
-    {% if target == "w3c" %}
-    <div id="test-output"></div>
-    {% endif %}
-    {{ test_html }}
+    <div id="logo-metadata">
+        <img src="../../RES/logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px;">
+        <h1>{{ test_name }}</h1>
+        <p>Test ID: {{ test_id }}</p>
+    </div>
+    <div id="test-elements">
+        {{ test_html }}
+    </div>
+    <div id="test-output">
+        {% if target == "w3c" %}
+        <h2>Test Output</h2>
+        {% endif %}
+    </div>
 </body>
 </html>
