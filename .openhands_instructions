@@ -1,0 +1,116 @@
+# HtmlHbbTVTestCaseGenerator Instructions
+
+## Project Structure
+```
+.
+├── test_templates/                    # Templates directory
+│   ├── base.html                     # Base template for all test cases
+│   └── TEST_001_step_sequence/       # Example test case
+│       └── test.html                 # Test implementation
+├── tests/                            # Generated test cases
+│   ├── HbbTV/                        # HbbTV test cases
+│   │   └── TEST_001/
+│   │       ├── index.html           # HbbTV test case
+│   │       ├── implementation.xml   # Test implementation
+│   │       ├── ait.xml             # Application info
+│   │       └── playoutset.xml      # DVB configuration
+│   └── Html/                         # W3C test cases
+│       └── TEST_001/
+│           └── index.html          # W3C browser test
+├── test_generator.py                 # Main generator script
+└── xml_generator.py                  # HbbTV XML file generator
+```
+
+## Development Workflow
+
+1. Create new feature branch:
+```bash
+git checkout main
+git checkout -b feature-name
+```
+
+2. Create test case template in `test_templates/TEST_XXX/test.html`:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+    // Test metadata
+    var TEST_METADATA = {
+        "test_id": "TEST_XXX",
+        "test_name": "Test Name",
+        "https_required": false
+    };
+
+    // Test initialization code
+    var TEST_INIT = `
+        // Variables and setup
+    `;
+
+    // Test execution code
+    var TEST_BODY = `
+        async function runTest() {
+            // Test steps
+            reportStep(1, "PASS", "Step completed");
+            
+            // Manual verification
+            const result = await askManual("Verify something?");
+            if (result) {
+                reportStep(2, "PASS", "Manual verification successful");
+            } else {
+                reportStep(2, "FAIL", "Manual verification failed");
+                endTest("FAIL", "Manual verification failed");
+                return;
+            }
+            
+            endTest("PASS", "All steps completed");
+        }
+        
+        runTest();
+    `;
+    </script>
+</head>
+<body>
+    <div id="test-container">
+        <p>Test description</p>
+    </div>
+</body>
+</html>
+```
+
+3. Generate test cases:
+```bash
+python test_generator.py
+```
+
+4. Run Playwright tests:
+```bash
+pytest tests/test_w3c.py --browser chromium
+```
+
+5. Commit changes:
+```bash
+git add .
+git commit -m "Add test case XXX"
+git push -u origin feature-name
+```
+
+6. Create pull request to main branch
+
+## Publishing
+
+The W3C version is automatically published to GitHub Pages when changes are merged to main:
+- Test case URL: https://jensk-dk.github.io/HtmlHbbTVTestCaseGenerator/test/TEST_001.html
+
+## CI/CD Pipeline
+
+GitLab CI pipeline runs on every push:
+1. Install dependencies
+2. Generate test cases
+3. Run Playwright tests
+4. Deploy W3C version to Pages
+
+## Git Configuration
+
+- Username: openhands
+- Email: openhands@all-hands.dev
