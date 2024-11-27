@@ -1,9 +1,7 @@
 from pathlib import Path
 import sys
 
-from javascript_generator import JavaScriptGenerator
-
-
+from javascript_generator import JavaScriptGenerators
 
 if __name__ == '__main__':
 
