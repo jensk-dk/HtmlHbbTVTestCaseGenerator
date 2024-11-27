@@ -3,29 +3,31 @@ import sys
 
 from javascript_generator import JavaScriptGenerator
 
-def generateTestCase(testCaseDir: Path, outputDir: Path):
-    jsg = JavaScriptGenerator()
-    jsg.load_base(testCaseDir)
-
-
 
 
 if __name__ == '__main__':
 
     # TODO: Take parameters
 
-    testInputPath = Path("test_cases")
-    testOutputPath = Path("out")
+#    testInputPath = Path("test_cases")
+#    testOutputPath = Path("out")
 
-    if not testInputPath.exists():
-        print(f"Test case input path {testInputPath} does not exists")
-        sys.exit(1)
+    hbbtv_js = [Path('./test_cases/demo/main.js'), Path('./test_cases/demo/hbbtv.js')]
+    hbbtv_js_a = [Path('./test_cases/demo/main.js'), Path('./test_cases/demo/hbbtv.js'), Path('./test_cases/demo/hbbtv_2.js')]
+    hbbtv_js_b = [Path('./test_cases/demo/main.js'), Path('./test_cases/demo/hbbtv_2.js'), Path('./test_cases/demo/hbbtv.js')]
+    w3c_js = [Path('./test_cases/demo/main.js'), Path('./test_cases/demo/normal.js')]
+    hbbtv_js_c = [Path('./test_cases/demo/hbbtv.js')]
 
-    if not testOutputPath.exists():
-        testOutputPath.mkdir()
+    output_path_hbbtv_js = Path('./out/hbbtv_main.js')
+    output_path_hbbtv_js_a = Path('./out/hbbtv_main_a.js')
+    output_path_hbbtv_js_b = Path('./out/hbbtv_main_b.js')
+    output_path_hbbtv_js_c = Path('./out/hbbtv_main_c.js')
+    output_path_w3c_js = Path('./out/w3c_main.js')
 
-    for testCasePath in testInputPath.iterdir():
+    js_gen = JavaScriptGenerator()
+    js_gen.generate_main_js_file(hbbtv_js, output_path_hbbtv_js)
+    js_gen.generate_main_js_file(hbbtv_js_a, output_path_hbbtv_js_a)
+    js_gen.generate_main_js_file(hbbtv_js_b, output_path_hbbtv_js_b)
+    js_gen.generate_main_js_file(hbbtv_js_c, output_path_hbbtv_js_c)
 
-
-        if testCasePath.is_dir():
-            generateTestCase(testCasePath, testOutputPath / testCasePath.name)
+    js_gen.generate_main_js_file(w3c_js, output_path_w3c_js)
