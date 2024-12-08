@@ -1,4 +1,5 @@
 {
+    "test_case_name": "com.demo.DEMO",
     "hbbtv_files": ["./test_cases/demo/main.js", "./test_cases/demo/hbbtv.js"],
     "w3c_files": ["./test_cases/demo/main.js", "./test_cases/demo/normal.js"]
 }

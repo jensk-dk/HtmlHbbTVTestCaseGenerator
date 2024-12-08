@@ -19,6 +19,9 @@ class JavaScriptGenerator:
 
 
     def generate_main_js_file(self, files: list[Path], output_path: Path) -> bool:
+        """
+        The first file in files is the base file on which each following will be applied upon.
+        """
 
         variables, functions = self.combine_files(files)
 
@@ -81,7 +84,6 @@ class JavaScriptGenerator:
                     functions[key] = value
         return variables, functions
 
-
     def __load_js_file(self, path: Path) -> (dict[str, str], dict[str, dict[str, str]]):
 
         if path.exists():
@@ -91,7 +93,6 @@ class JavaScriptGenerator:
         else:
             print(f'ERROR could not load file: {path}')
             return None, None
-
 
     def __extract_all_functions_and_variables(self, java_script: str) -> (dict[str, str], dict[str, dict[str, str]]):
 
@@ -129,7 +130,6 @@ class JavaScriptGenerator:
             self.__validation_error('Main Function not Found')
             result = False
         return result
-
 
     # TODO: Move to a logging framework
     def __validation_succes(self, msg: str) -> None:
