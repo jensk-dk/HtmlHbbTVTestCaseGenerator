@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ test_id }} - {{ test_name }}</title>
+    {% if target == "hbbtv" %}
+    <script type="text/javascript" src="../../RES/testsuite.js"></script>
+    {% endif %}
+    <script>
+    // Initialize test variables
+    {{ test_init }}
+
+    {% if target == "hbbtv" %}
+    var testapi;
+    window.onload = function() {
+        testapi = new HbbTVTestAPI();
+        testapi.init();
+        startTest();
+    };
+    {% else %}
+    window.onload = function() {
+        startTest();
+    };
+    {% endif %}
+
+    function startTest() {
+        {% if target == "hbbtv" %}
+        testapi.reportMessage("Starting test {{ test_id }}");
+        {% else %}
+        console.log("Starting test {{ test_id }}");
+        {% endif %}
+        
+        runTest();
+    }
+
+    function runTest() {
+        {{ test_body }}
+    }
+
+    function askManual(question) {
+        return new Promise((resolve) => {
+            {% if target == "hbbtv" %}
+            testapi.analyzeManual(question, function(success) {
+                resolve(success);
+            });
+            {% else %}
+            const promptDiv = document.createElement('div');
+            promptDiv.className = 'manual-prompt';
+            promptDiv.innerHTML = `
+                <div class="question">${question}</div>
+                <div class="buttons">
+                    <button onclick="this.parentElement.parentElement.remove(); window._manualResolve(true)">Yes</button>
+                    <button onclick="this.parentElement.parentElement.remove(); window._manualResolve(false)">No</button>
+                </div>
+            `;
+            document.body.appendChild(promptDiv);
+            window._manualResolve = resolve;
+            {% endif %}
+        });
+    }
+
+    function reportStep(stepId, result, message) {
+        {% if target == "hbbtv" %}
+        testapi.reportStepResult(stepId, result, message);
+        {% else %}
+        console.log(`Step ${stepId}: ${result} - ${message}`);
+        const div = document.createElement('div');
+        div.textContent = `Step ${stepId}: ${result} - ${message}`;
+        div.className = result.toLowerCase();
+        document.getElementById('test-output').appendChild(div);
+        {% endif %}
+    }
+
+    function endTest(result, message) {
+        {% if target == "hbbtv" %}
+        testapi.endTest(result, message);
+        {% else %}
+        console.log(`Test ended: ${result} - ${message}`);
+        const div = document.createElement('div');
+        div.textContent = `Test ended: ${result} - ${message}`;
+        div.className = `test-end ${result.toLowerCase()}`;
+        document.getElementById('test-output').appendChild(div);
+        {% endif %}
+    }
+    </script>
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: minmax(300px, 1fr) minmax(300px, 1fr);
+        grid-template-rows: minmax(200px, 45vh) minmax(200px, 45vh);
+        min-height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+        gap: 1vh;
+    }
+    
+    #logo-metadata {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: auto;
+        margin: 10px;
+    }
+    
+    #test-elements {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: auto;
+        margin: 10px;
+    }
+    
+    #test-output {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: auto;
+        margin: 10px;
+    }
+    
+    body {
+        background: #f0f0f0;
+        font-family: Arial, sans-serif;
+    }
+    
+    {% if target == "w3c" %}
+    .pass { color: green; }
+    .fail { color: red; }
+    .test-end { 
+        margin-top: 20px;
+        font-weight: bold;
+    }
+    .manual-prompt {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 2px solid #333;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        text-align: center;
+        z-index: 1000;
+    }
+    .manual-prompt .question {
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+    .manual-prompt .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    .manual-prompt button {
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .manual-prompt button:first-child {
+        background: #4CAF50;
+        color: white;
+        border: none;
+    }
+    .manual-prompt button:last-child {
+        background: #f44336;
+        color: white;
+        border: none;
+    }
+    {% endif %}
+    {{ additional_styles }}
+    </style>
+</head>
+<body>
+    <div id="logo-metadata">
+        <img src="../../RES/logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px;">
+        <h1>{{ test_name }}</h1>
+        <p>Test ID: {{ test_id }}</p>
+    </div>
+    <div id="test-elements">
+        {{ test_html }}
+    </div>
+    <div id="test-output">
+        {% if target == "w3c" %}
+        <h2>Test Output</h2>
+        {% endif %}
+    </div>
+</body>
+</html>

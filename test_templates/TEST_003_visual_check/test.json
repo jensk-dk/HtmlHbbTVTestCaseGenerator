@@ -1,0 +1,7 @@
+{
+    "name": "Visual Elements Check",
+    "base_template": "cards.html",
+    "init": "var checkCount = 0;",
+    "body": "checkCount++;\\nswitch(checkCount) {\\n    case 1:\\n        reportStep(1, 'PASS', 'Starting visual checks');\\n        setTimeout(runTest, 1000);\\n        break;\\n    case 2:\\n        askManual('Is the red circle visible?').then(function(result) {\\n            reportStep(2, result ? 'PASS' : 'FAIL', 'Red circle visibility ' + (result ? 'confirmed' : 'failed'));\\n            setTimeout(runTest, 1000);\\n        });\\n        break;\\n    case 3:\\n        askManual('Is the blue square visible?').then(function(result) {\\n            reportStep(3, result ? 'PASS' : 'FAIL', 'Blue square visibility ' + (result ? 'confirmed' : 'failed'));\\n            setTimeout(runTest, 1000);\\n        });\\n        break;\\n    case 4:\\n        askManual('Are both shapes properly aligned?').then(function(result) {\\n            reportStep(4, result ? 'PASS' : 'FAIL', 'Shape alignment ' + (result ? 'confirmed' : 'failed'));\\n            endTest(result ? 'PASS' : 'FAIL', 'Visual test completed with ' + (result ? 'success' : 'failures'));\\n        });\\n        break;\\n}",
+    "styles": ".shape { display: inline-block; margin: 10px; }\\n.circle { width: 50px; height: 50px; border-radius: 50%; background: red; }\\n.square { width: 50px; height: 50px; background: blue; }"
+}

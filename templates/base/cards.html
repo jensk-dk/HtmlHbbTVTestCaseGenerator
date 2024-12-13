@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ test_id }} - {{ test_name }}</title>
+    {% if target == "hbbtv" %}
+    <script type="text/javascript" src="../../RES/testsuite.js"></script>
+    {% endif %}
+    <script>
+    // Initialize test variables
+    {{ test_init }}
+
+    {% if target == "hbbtv" %}
+    var testapi;
+    window.onload = function() {
+        testapi = new HbbTVTestAPI();
+        testapi.init();
+        startTest();
+    };
+    {% else %}
+    window.onload = function() {
+        startTest();
+    };
+    {% endif %}
+
+    function startTest() {
+        {% if target == "hbbtv" %}
+        testapi.reportMessage("Starting test {{ test_id }}");
+        {% else %}
+        console.log("Starting test {{ test_id }}");
+        {% endif %}
+        
+        runTest();
+    }
+
+    function runTest() {
+        {{ test_body }}
+    }
+
+    function askManual(question) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            document.body.appendChild(overlay);
+
+            const promptDiv = document.createElement('div');
+            promptDiv.className = 'manual-prompt';
+            promptDiv.innerHTML = `
+                <div class="question">${question}</div>
+                <div class="buttons">
+                    <button onclick="this.closest('.manual-prompt').remove(); document.querySelector('.overlay').remove(); window._manualResolve(true)">Yes</button>
+                    <button onclick="this.closest('.manual-prompt').remove(); document.querySelector('.overlay').remove(); window._manualResolve(false)">No</button>
+                </div>
+            `;
+            document.body.appendChild(promptDiv);
+            window._manualResolve = resolve;
+        });
+    }
+
+    function reportStep(stepId, result, message) {
+        {% if target == "hbbtv" %}
+        testapi.reportStepResult(stepId, result, message);
+        {% else %}
+        console.log(`Step ${stepId}: ${result} - ${message}`);
+        const div = document.createElement('div');
+        div.textContent = `Step ${stepId}: ${result} - ${message}`;
+        div.className = result.toLowerCase();
+        document.getElementById('test-output').appendChild(div);
+        {% endif %}
+    }
+
+    function endTest(result, message) {
+        {% if target == "hbbtv" %}
+        testapi.endTest(result, message);
+        {% else %}
+        console.log(`Test ended: ${result} - ${message}`);
+        const div = document.createElement('div');
+        div.textContent = `Test ended: ${result} - ${message}`;
+        div.className = `test-end ${result.toLowerCase()}`;
+        document.getElementById('test-output').appendChild(div);
+        {% endif %}
+    }
+    </script>
+    <style>
+    :root {
+        --card-width: min(400px, calc(100vw - 40px));
+        --card-gap: 20px;
+    }
+
+    body {
+        margin: 0;
+        padding: var(--card-gap);
+        font-family: Arial, sans-serif;
+        background: #f0f0f0;
+        min-height: 100vh;
+        box-sizing: border-box;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--card-gap);
+        align-items: flex-start;
+        justify-content: center;
+    }
+
+    .card {
+        width: var(--card-width);
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        box-sizing: border-box;
+        max-height: calc(100vh - 2 * var(--card-gap));
+        overflow: auto;
+    }
+
+    #metadata-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    #metadata-card img {
+        max-width: min(200px, calc(var(--card-width) - 40px));
+        height: auto;
+        margin-bottom: 20px;
+    }
+
+    #metadata-card h1 {
+        margin: 0;
+        font-size: 1.5em;
+        color: #333;
+    }
+
+    #test-elements {
+        font-size: 1em;
+        line-height: 1.5;
+    }
+
+    .pass { color: green; }
+    .fail { color: red; }
+    .test-end { 
+        margin-top: 20px;
+        font-weight: bold;
+    }
+
+    .manual-prompt {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        text-align: center;
+        z-index: 1000;
+        max-width: var(--card-width);
+        width: 90%;
+    }
+
+    .manual-prompt .question {
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+
+    .manual-prompt .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .manual-prompt button {
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+        transition: opacity 0.2s;
+    }
+
+    .manual-prompt button:hover {
+        opacity: 0.9;
+    }
+
+    .manual-prompt button:first-child {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .manual-prompt button:last-child {
+        background: #f44336;
+        color: white;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    {{ additional_styles }}
+    </style>
+</head>
+<body>
+    <div id="metadata-card" class="card">
+        <img src="../../RES/logo.png" alt="Logo">
+        <h1>{{ test_name }}</h1>
+        <p>Test ID: {{ test_id }}</p>
+    </div>
+    <div id="test-elements" class="card">
+        {{ test_html }}
+    </div>
+    <div id="test-output" class="card">
+        <h2>Test Output</h2>
+    </div>
+</body>
+</html>

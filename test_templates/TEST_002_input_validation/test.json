@@ -1,0 +1,7 @@
+{
+    "name": "Input Field Validation Test",
+    "base_template": "grid.html",
+    "init": "var inputValue = '';",
+    "body": "const input = document.getElementById('test-input');\\nif (!input.value) {\\n    reportStep(1, 'PASS', 'Input field is empty');\\n    input.value = 'test123';\\n    setTimeout(runTest, 1000);\\n} else if (input.value === 'test123') {\\n    reportStep(2, 'PASS', 'Input field was populated');\\n    askManual('Can you see the text \"test123\" in the input field?').then(function(result) {\\n        reportStep(3, result ? 'PASS' : 'FAIL', 'Visual verification ' + (result ? 'succeeded' : 'failed'));\\n        endTest(result ? 'PASS' : 'FAIL', 'Test completed with ' + (result ? 'success' : 'failures'));\\n    });\\n}",
+    "styles": "#test-input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 200px; margin-top: 10px; }"
+}
