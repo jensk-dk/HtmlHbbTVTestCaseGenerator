@@ -88,33 +88,50 @@
         margin: 0;
         padding: 0;
         display: grid;
-        grid-template-columns: 50% 50%;
-        grid-template-rows: 50vh 50vh;
+        grid-template-columns: minmax(300px, 1fr) minmax(300px, 1fr);
+        grid-template-rows: minmax(200px, 45vh) minmax(200px, 45vh);
         min-height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+        gap: 1vh;
     }
     
     #logo-metadata {
         grid-column: 1;
         grid-row: 1;
         padding: 20px;
-        border-right: 1px solid #ccc;
-        border-bottom: 1px solid #ccc;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         overflow: auto;
+        margin: 10px;
     }
     
     #test-elements {
         grid-column: 1;
         grid-row: 2;
         padding: 20px;
-        border-right: 1px solid #ccc;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         overflow: auto;
+        margin: 10px;
     }
     
     #test-output {
         grid-column: 2;
         grid-row: 1 / span 2;
         padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         overflow: auto;
+        margin: 10px;
+    }
+    
+    body {
+        background: #f0f0f0;
+        font-family: Arial, sans-serif;
     }
     
     {% if target == "w3c" %}

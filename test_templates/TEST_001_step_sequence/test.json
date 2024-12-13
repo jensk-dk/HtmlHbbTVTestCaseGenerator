@@ -1,0 +1,7 @@
+{
+    "name": "Basic Step Sequence Test",
+    "base_template": "grid.html",
+    "init": "var stepCount = 0;",
+    "body": "stepCount++;\\nif (stepCount === 1) {\\n    reportStep(stepCount, 'PASS', 'Automatic step completed');\\n    setTimeout(runTest, 1000);\\n} else if (stepCount === 2) {\\n    askManual('Did you see the previous step pass?').then(function(result) {\\n        reportStep(stepCount, result ? 'PASS' : 'FAIL', 'Manual verification ' + (result ? 'succeeded' : 'failed'));\\n        setTimeout(runTest, 1000);\\n    });\\n} else {\\n    askManual('Is everything working as expected?').then(function(result) {\\n        reportStep(stepCount, result ? 'PASS' : 'FAIL', 'Final verification ' + (result ? 'succeeded' : 'failed'));\\n        endTest(result ? 'PASS' : 'FAIL', 'Test completed with ' + (result ? 'success' : 'failures'));\\n    });\\n}",
+    "styles": "#test-elements ol { margin-left: 20px; line-height: 1.5; }"
+}

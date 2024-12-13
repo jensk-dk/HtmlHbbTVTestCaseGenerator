@@ -8,73 +8,51 @@ from typing import Dict, List, Union, Literal
 from bs4 import BeautifulSoup
 
 class TestCaseGenerator:
-    def __init__(self, templates_dir: str = "test_templates"):
+    def __init__(self, templates_dir: str = "test_templates", base_templates_dir: str = "templates/base"):
         """Initialize the test case generator
         
         Args:
-            templates_dir: Directory containing base.html and test case directories
+            templates_dir: Directory containing test case directories
+            base_templates_dir: Directory containing base templates (grid.html, cards.html, etc.)
         """
         if not os.path.exists(templates_dir):
             raise ValueError(f"Templates directory {templates_dir} does not exist")
             
-        if not os.path.exists(os.path.join(templates_dir, "base.html")):
-            raise ValueError(f"Base template {templates_dir}/base.html does not exist")
+        if not os.path.exists(base_templates_dir):
+            raise ValueError(f"Base templates directory {base_templates_dir} does not exist")
             
-        self.env = Environment(loader=FileSystemLoader(templates_dir))
+        self.env = Environment(loader=FileSystemLoader([templates_dir, base_templates_dir]))
         self.xml_generator = HbbTVXMLGenerator()
 
-    def extract_test_info(self, template_path: str) -> Dict:
+    def extract_test_info(self, test_dir: str) -> Dict:
         """
-        Extract test information from a template file
+        Extract test information from a test directory
         
         Args:
-            template_path: Path to the template file
+            test_dir: Path to the test directory containing test.json and test.html
             
         Returns:
             Dictionary containing test metadata, init code, body code, and HTML
         """
-        with open(template_path, 'r') as f:
-            content = f.read()
+        # Load test.json
+        with open(os.path.join(test_dir, "test.json"), 'r') as f:
+            test_data = json.load(f)
         
-        soup = BeautifulSoup(content, 'html.parser')
-        
-        # Extract metadata
-        metadata_script = soup.find('script', text=re.compile(r'TEST_METADATA'))
-        if not metadata_script:
-            raise ValueError(f"No TEST_METADATA found in {template_path}")
-        
-        # Extract the JSON object from the JavaScript variable
-        metadata_match = re.search(r'TEST_METADATA\s*=\s*({[^}]+})', metadata_script.string)
-        if not metadata_match:
-            raise ValueError(f"Invalid TEST_METADATA format in {template_path}")
-        metadata = json.loads(metadata_match.group(1))
-        
-        # Extract initialization code
-        init_match = re.search(r'TEST_INIT\s*=\s*`([^`]+)`', content)
-        if not init_match:
-            raise ValueError(f"No TEST_INIT found in {template_path}")
-        init_code = init_match.group(1).strip()
-        
-        # Extract test body code
-        body_match = re.search(r'TEST_BODY\s*=\s*`([^`]+)`', content)
-        if not body_match:
-            raise ValueError(f"No TEST_BODY found in {template_path}")
-        body_code = body_match.group(1).strip()
-        
-        # Extract any additional HTML from body
-        test_container = soup.find('div', id='test-container')
-        test_html = str(test_container) if test_container else ""
-        
-        # Extract any additional styles
-        style_tag = soup.find('style')
-        additional_styles = style_tag.string if style_tag else ""
+        # Load test.html
+        with open(os.path.join(test_dir, "test.html"), 'r') as f:
+            test_html = f.read()
         
         return {
-            'metadata': metadata,
-            'init_code': init_code,
-            'body_code': body_code,
+            'metadata': {
+                'test_id': os.path.basename(test_dir),
+                'test_name': test_data.get('name', ''),
+                'https_required': test_data.get('https_required', False)
+            },
+            'base_template': test_data.get('base_template', 'grid.html'),
+            'init_code': test_data.get('init', ''),
+            'body_code': test_data.get('body', ''),
             'test_html': test_html,
-            'additional_styles': additional_styles
+            'additional_styles': test_data.get('styles', '')
         }
     
     def generate_test_case(self, 
@@ -84,7 +62,8 @@ class TestCaseGenerator:
                           test_body: str,
                           target: Literal["hbbtv", "w3c"],
                           test_html: str = "",
-                          additional_styles: str = "") -> str:
+                          additional_styles: str = "",
+                          base_template: str = "grid.html") -> str:
         """
         Generate a test case for the specified target platform
         
@@ -96,11 +75,12 @@ class TestCaseGenerator:
             target: Target platform ("hbbtv" or "w3c")
             test_html: Additional HTML content for the test
             additional_styles: Additional CSS styles
+            base_template: Name of the base template to use (e.g., "grid.html", "cards.html")
             
         Returns:
             The generated HTML test case as a string
         """
-        template = self.env.get_template("base.html")
+        template = self.env.get_template(base_template)
         return template.render(
             test_id=test_id,
             test_name=test_name,
@@ -118,18 +98,19 @@ class TestCaseGenerator:
         Generate both HbbTV and W3C versions of a test case from a template directory
         
         Args:
-            template_dir: Path to the template directory containing test.html
+            template_dir: Path to the template directory containing test.json and test.html
             output_base_dir: Base directory for output files
             
         Returns:
             Dictionary with paths to generated files
         """
-        template_path = os.path.join(template_dir, "test.html")
-        if not os.path.exists(template_path):
+        if not os.path.exists(os.path.join(template_dir, "test.json")):
+            raise ValueError(f"No test.json found in {template_dir}")
+        if not os.path.exists(os.path.join(template_dir, "test.html")):
             raise ValueError(f"No test.html found in {template_dir}")
             
         # Extract test information
-        test_info = self.extract_test_info(template_path)
+        test_info = self.extract_test_info(template_dir)
         test_id = test_info['metadata']['test_id']
         
         # Create output directories
@@ -146,7 +127,8 @@ class TestCaseGenerator:
             test_info['body_code'],
             "hbbtv",
             test_info['test_html'],
-            test_info['additional_styles']
+            test_info['additional_styles'],
+            test_info['base_template']
         )
         
         w3c_test = self.generate_test_case(
@@ -156,7 +138,8 @@ class TestCaseGenerator:
             test_info['body_code'],
             "w3c",
             test_info['test_html'],
-            test_info['additional_styles']
+            test_info['additional_styles'],
+            test_info['base_template']
         )
         
         # Save to files
@@ -216,7 +199,7 @@ class TestCaseGenerator:
         
         # Find all directories in templates_dir
         for item in os.listdir(templates_dir):
-            if item != "base.html" and os.path.isdir(os.path.join(templates_dir, item)):
+            if os.path.isdir(os.path.join(templates_dir, item)):
                 try:
                     template_dir = os.path.join(templates_dir, item)
                     results[item] = self.generate_from_template(template_dir, output_dir)
