@@ -18,10 +18,23 @@
             list-style: none;
             padding: 0;
         }
-        .test-list li {
+        .test-list > li {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f8f8;
+        }
+        .test-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        .test-list ul li {
             margin: 10px 0;
             padding: 10px;
-            border: 1px solid #ddd;
+            background: white;
+            border: 1px solid #eee;
             border-radius: 4px;
         }
         .test-list a {
@@ -31,12 +44,28 @@
         .test-list a:hover {
             text-decoration: underline;
         }
+        .test-list strong {
+            color: #333;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 <body>
     <h1>HbbTV Test Cases</h1>
     <ul class="test-list">
-        <li><a href="test/TEST_001_step_sequence/test.html">TEST_001_step_sequence</a> - Basic step sequence test</li>
+        <li>
+            <strong>Grid Layout Examples:</strong>
+            <ul>
+                <li><a href="test/TEST_001_step_sequence/test.html">TEST_001_step_sequence</a> - Basic step sequence test</li>
+                <li><a href="test/TEST_002_input_validation/test.html">TEST_002_input_validation</a> - Input field validation test</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Card Layout Example:</strong>
+            <ul>
+                <li><a href="test/TEST_003_visual_check/test.html">TEST_003_visual_check</a> - Visual elements check test</li>
+            </ul>
+        </li>
     </ul>
 </body>
 </html>
